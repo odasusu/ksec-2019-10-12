@@ -1,0 +1,105 @@
+パスワードスプレー攻撃を検知・防御する
+https://ksec.connpass.com/event/147498/
+資料：https://speakerdeck.com/anishikawa/20191012hasuwatosuhureipei-bu-yong?slide=6
+
+時間	内容
+13:00	開場
+13:30〜13:40	パスワードスプレー攻撃とは
+13:40〜14:00	環境に関する説明
+14:00〜16:45	対策実施
+16:45〜17:30	発表
+17:30〜18:00	撤収
+
+言語はPHPでやる
+
+エンジンXに
+ハッシュ化されていない
+SHR256でやっている
+
+ブルートフォース攻撃はアカウントロックされるから気付きやすい
+
+パスワードポリシーは比較的に隠した方が良い
+
+
+[** 発表してほしいこと]
+顧客に対してどのような対策をとるのか
+パスワードリセットなど
+
+メンバー
+　小田原
+　堀之内
+
+
+要件
+多少の被害があっても数秒以内に気づく
+　環境によってバージョンが上がったりして脆弱性が生まれるから
+　新たな攻撃方法が生まれるから
+
+対策
+対策する攻撃
+　パスワードリスト型攻撃
+　パスワードスプレー攻撃
+
+対策方法のアイデア
+　アカウントロック　一定回数間違ったらそのアカウントロックする
+ WAF　同じIPアドレスからの一定時間の失敗回数を数えて遮断するような仕組み
+　 禁止事項に触れるためだめ
+
+こういう方法もあるよ
+ ログインをgmailなどでログインさせるようにする
+ ID、パスワードでログインさせないようにする
+
+　システム直さないのあれば、システムを落とすのもあり
+　ログイン失敗をするとログイン履歴に残るので、検知するようにする
+　同じIPから何回もアクセスする場合も検知し通知するようにする
+　３回失敗したら検知する
+　　ただし同じアカウントに対して検知することが難しい
+
+最初の攻撃について
+　サイトに登録されているIPからもパスワード試行は行われる
+　日によってと書かれているが今回は同じIP
+
+3分間おきに過去１時間のログインデータを見るクエリをかく
+バッチ処理を書く
+　シェル
+どこを見るか？
+　IPだけで検知する
+　チェックする頻度を考える
+　ユーザに検知する仕組みとして、メールやslackで通知させる
+　　slackだとcurlを叩く
+
+　クエリ
+　過去１時間のログインデータを
+　authentication_histories
+　iparess
+　status
+
+
+users
+　fail_cont
+
+
+
+code:DB接続する
+ -> % ping 192.168.11.24
+ -> % ssh pi@192.168.11.24
+ pi@192.168.11.24's password: 
+ Permission denied, please try again.
+ pi@192.168.11.24's password: 
+ Permission denied, please try again.
+ pi@192.168.11.24's password: 
+ Linux nishikawapi 4.19.66-v7+ #1253 SMP Thu Aug 15 11:49:46 BST 2019 armv7l
+ 
+ The programs included with the Debian GNU/Linux system are free software;
+ the exact distribution terms for each program are described in the
+ individual files in /usr/share/doc/*/copyright.
+ 
+ Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
+ permitted by applicable law.
+ Last login: Sat Oct 12 10:36:01 2019 from 192.168.11.20
+ 
+ pi@nishikawapi:~ $ mysql -u root -p
+ 
+ 
+
+select ipaddress, count( ipaddress) from authentication_histories;
