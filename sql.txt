@@ -1,0 +1,18 @@
+select
+ *
+from
+ (
+   select
+     ipaddress
+     , count(ipaddress) as  count_ipaddress
+   from
+     authentication_histories
+   where
+     created_at > NOW() - INTERVAL 1 HOUR
+   group by
+     ipaddress
+ )
+ as count
+where
+ count.count_ipaddress >= 3;
+ 
