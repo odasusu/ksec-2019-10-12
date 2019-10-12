@@ -9,6 +9,7 @@ from
      authentication_histories
    where
      created_at > NOW() - INTERVAL 1 HOUR
+    and status = 0
    group by
      ipaddress
  )
